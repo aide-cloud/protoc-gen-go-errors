@@ -1,0 +1,14 @@
+[SYSTEM_ERROR]
+description = "SYSTEM_ERROR"
+one = "System error"
+other = "System error"
+
+[USER_ALREADY_EXISTS]
+description = "USER_ALREADY_EXISTS"
+one = "User already exists"
+other = "User already exists"
+
+[USER_NOT_FOUND]
+description = "USER_NOT_FOUND"
+one = "User not found"
+other = "User not found"

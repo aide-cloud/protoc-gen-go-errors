@@ -26,7 +26,11 @@ func Error{{ .CamelValue }}(format string, args ...interface{}) *errors.Error {
             config.TemplateData = args[0]
         }
 
-        localize, err := FromContext(ctx).Localize(config)
+        local, ok := FromContext(ctx)
+        if !ok {
+            return errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), fmt.Sprintf("{{ .Message }}", args...))
+        }
+        localize, err := local.Localize(config)
         if err != nil {
             return errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), fmt.Sprintf("{{ .Message }}", args...))
         }
