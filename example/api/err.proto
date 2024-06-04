@@ -14,8 +14,17 @@ enum ErrorReason {
 	SYSTEM_ERROR = 0 [
 		(errors.code) = 500,
 		(errors.id) = "SYSTEM_ERROR",
-		(errors.message) = "系统错误"
+		(errors.message) = "系统错误",
+		(errors.metadata) = {
+			key: "1",
+			value: "1"
+		},
+		(errors.metadata) = {
+			key: "2",
+			value: "2"
+		}
 	];
+
 
 	USER_NOT_FOUND = 1 [
 		(errors.code) = 404,

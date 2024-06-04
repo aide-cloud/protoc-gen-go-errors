@@ -55,7 +55,7 @@ func IsSystemError(err error) bool {
 }
 
 func ErrorSystemError(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, ErrorReason_SYSTEM_ERROR.String(), fmt.Sprintf(format, args...))
+	return errors.New(500, ErrorReason_SYSTEM_ERROR.String(), fmt.Sprintf(format, args...)).WithMetadata(map[string]string{"1": "1", "2": "2"})
 }
 
 const ErrorI18nSystemErrorID = "SYSTEM_ERROR"
@@ -67,16 +67,18 @@ func ErrorI18nSystemError(ctx context.Context, args ...interface{}) *errors.Erro
 	if len(args) > 0 {
 		config.TemplateData = args[0]
 	}
-
+	err := errors.New(500, ErrorReason_SYSTEM_ERROR.String(), fmt.Sprintf("系统错误", args...))
 	local, ok := FromContext(ctx)
-	if !ok {
-		return errors.New(500, ErrorReason_SYSTEM_ERROR.String(), fmt.Sprintf("系统错误", args...))
+	if ok {
+		localize, err1 := local.Localize(config)
+		if err1 != nil {
+			err = errors.New(500, ErrorReason_SYSTEM_ERROR.String(), fmt.Sprintf("系统错误", args...)).WithCause(err1)
+		} else {
+			err = errors.New(500, ErrorReason_SYSTEM_ERROR.String(), localize)
+		}
 	}
-	localize, err := local.Localize(config)
-	if err != nil {
-		return errors.New(500, ErrorReason_SYSTEM_ERROR.String(), fmt.Sprintf("系统错误", args...))
-	}
-	return errors.New(500, ErrorReason_SYSTEM_ERROR.String(), localize)
+
+	return err.WithMetadata(map[string]string{"1": "1", "2": "2"})
 }
 
 func IsUserNotFound(err error) bool {
@@ -100,16 +102,18 @@ func ErrorI18nUserNotFound(ctx context.Context, args ...interface{}) *errors.Err
 	if len(args) > 0 {
 		config.TemplateData = args[0]
 	}
-
+	err := errors.New(404, ErrorReason_USER_NOT_FOUND.String(), fmt.Sprintf("用户不存在", args...))
 	local, ok := FromContext(ctx)
-	if !ok {
-		return errors.New(404, ErrorReason_USER_NOT_FOUND.String(), fmt.Sprintf("用户不存在", args...))
+	if ok {
+		localize, err1 := local.Localize(config)
+		if err1 != nil {
+			err = errors.New(404, ErrorReason_USER_NOT_FOUND.String(), fmt.Sprintf("用户不存在", args...)).WithCause(err1)
+		} else {
+			err = errors.New(404, ErrorReason_USER_NOT_FOUND.String(), localize)
+		}
 	}
-	localize, err := local.Localize(config)
-	if err != nil {
-		return errors.New(404, ErrorReason_USER_NOT_FOUND.String(), fmt.Sprintf("用户不存在", args...))
-	}
-	return errors.New(404, ErrorReason_USER_NOT_FOUND.String(), localize)
+
+	return err
 }
 
 func IsUserAlreadyExists(err error) bool {
@@ -133,14 +137,16 @@ func ErrorI18nUserAlreadyExists(ctx context.Context, args ...interface{}) *error
 	if len(args) > 0 {
 		config.TemplateData = args[0]
 	}
-
+	err := errors.New(400, ErrorReason_USER_ALREADY_EXISTS.String(), fmt.Sprintf("用户已存在", args...))
 	local, ok := FromContext(ctx)
-	if !ok {
-		return errors.New(400, ErrorReason_USER_ALREADY_EXISTS.String(), fmt.Sprintf("用户已存在", args...))
+	if ok {
+		localize, err1 := local.Localize(config)
+		if err1 != nil {
+			err = errors.New(400, ErrorReason_USER_ALREADY_EXISTS.String(), fmt.Sprintf("用户已存在", args...)).WithCause(err1)
+		} else {
+			err = errors.New(400, ErrorReason_USER_ALREADY_EXISTS.String(), localize)
+		}
 	}
-	localize, err := local.Localize(config)
-	if err != nil {
-		return errors.New(400, ErrorReason_USER_ALREADY_EXISTS.String(), fmt.Sprintf("用户已存在", args...))
-	}
-	return errors.New(400, ErrorReason_USER_ALREADY_EXISTS.String(), localize)
+
+	return err
 }

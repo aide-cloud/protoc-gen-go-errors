@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"unicode"
@@ -101,16 +102,24 @@ func genErrorsReason(_ *protogen.Plugin, _ *protogen.File, g *protogen.Generated
 		}
 		id := proto.GetExtension(v.Desc.Options(), errors.E_Id).(string)
 		message := proto.GetExtension(v.Desc.Options(), errors.E_Message).(string)
+		metadata := proto.GetExtension(v.Desc.Options(), errors.E_Metadata).([]*errors.Metadata)
+		metadataMap := make(map[string]string)
+		for _, m := range metadata {
+			metadataMap[m.Key] = m.Value
+		}
+		metadataMapBs, _ := json.Marshal(metadataMap)
 		err := &errorInfo{
-			Name:       string(enum.Desc.Name()),
-			Value:      string(v.Desc.Name()),
-			HTTPCode:   enumCode,
-			CamelValue: case2Camel(string(v.Desc.Name())),
-			Comment:    comment,
-			HasComment: len(comment) > 0,
-			ID:         id,
-			Message:    message,
-			HasI18n:    id != "" && message != "",
+			Name:        string(enum.Desc.Name()),
+			Value:       string(v.Desc.Name()),
+			HTTPCode:    enumCode,
+			CamelValue:  case2Camel(string(v.Desc.Name())),
+			Comment:     comment,
+			HasComment:  len(comment) > 0,
+			ID:          id,
+			Message:     message,
+			HasI18n:     id != "" && message != "",
+			Metadata:    string(metadataMapBs),
+			HasMetadata: metadataMap != nil && len(metadataMap) > 0,
 		}
 		ew.Errors = append(ew.Errors, err)
 	}
