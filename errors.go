@@ -54,7 +54,7 @@ func generateFileContent(gen *protogen.Plugin, file *protogen.File, g *protogen.
 	g.P("type localizeKey struct{}")
 	g.P("func FromContext(ctx context.Context) (*i18n.Localizer, bool) {\n\tlocal, ok:= ctx.Value(localizeKey{}).(*i18n.Localizer)\n\treturn local, ok\n}")
 	g.P()
-	g.P("func WithLocalize(ctx context.Context, localize *i18n.Localizer) context.Context {\n\treturn context.WithValue(context.Background(), localizeKey{}, localize)\n}")
+	g.P("func WithLocalize(ctx context.Context, localize *i18n.Localizer) context.Context {\n\treturn context.WithValue(ctx, localizeKey{}, localize)\n}")
 	g.P()
 	g.P("// GetI18nMessage 获取错误信息\nfunc GetI18nMessage(ctx context.Context, id string, args ...interface{}) string {\n\tif id == \"\" {\n\t\treturn \"\"\n\t}\n\tconfig := &i18n.LocalizeConfig{\n\t\tMessageID: id,\n\t}\n\tif len(args) > 0 {\n\t\tconfig.TemplateData = args[0]\n\t}\n\tlocal, ok := FromContext(ctx)\n\tif !ok {\n\t\treturn \"\"\n\t}\n\tlocalize, err := local.Localize(config)\n\tif err != nil {\n\t\treturn \"\"\n\t}\n\treturn localize\n}")
 	g.P()
