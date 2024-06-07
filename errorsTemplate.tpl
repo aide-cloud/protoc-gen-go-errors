@@ -1,6 +1,6 @@
 {{ range .Errors }}
 
-{{ if .HasComment }}{{ .Comment }}{{ end -}}
+{{ if .HasComment }}// Is{{.CamelValue}} {{ .Comment }}{{ end -}}
 func Is{{.CamelValue}}(err error) bool {
 	if err == nil {
 		return false
@@ -9,15 +9,22 @@ func Is{{.CamelValue}}(err error) bool {
 	return e.Reason == {{ .Name }}_{{ .Value }}.String() && e.Code == {{ .HTTPCode }}
 }
 
-{{ if .HasComment }}{{ .Comment }}{{ end -}}
+{{ if .HasComment }}// Error{{ .CamelValue }} {{ .Comment }}{{ end -}}
 func Error{{ .CamelValue }}(format string, args ...interface{}) *errors.Error {
+    return errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), fmt.Sprintf(format, args...))
+}
+
+{{ if .HasComment }}// Error{{ .CamelValue }}WithContext {{ .Comment }}//  带上下文，支持国际化输出元数据
+{{ end -}}
+func Error{{ .CamelValue }}WithContext({{ if .HasMetadata }}ctx{{else}}_{{ end }} context.Context, format string, args ...interface{}) *errors.Error {
     return errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), fmt.Sprintf(format, args...)){{ if .HasMetadata }}.WithMetadata(map[string]string{{ .Metadata }}){{ end }}
 }
 
 {{ if .HasI18n }}
     const ErrorI18n{{ .CamelValue }}ID = "{{ .ID }}"
 
-    {{ if .HasComment }}{{ .Comment }}{{ end -}}
+    {{ if .HasComment }}// ErrorI18n{{ .CamelValue }} {{ .Comment }}//  支持国际化输出
+    {{ end -}}
     func ErrorI18n{{ .CamelValue }}(ctx context.Context, args ...interface{}) *errors.Error {
         config := &i18n.LocalizeConfig{
             MessageID: ErrorI18n{{ .CamelValue }}ID,

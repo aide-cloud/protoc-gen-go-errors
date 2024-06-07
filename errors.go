@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"unicode"
@@ -100,14 +99,28 @@ func genErrorsReason(_ *protogen.Plugin, _ *protogen.File, g *protogen.Generated
 		if comment == "" {
 			comment = v.Comments.Trailing.String()
 		}
+		comment = strings.TrimPrefix(comment, "// ")
 		id := proto.GetExtension(v.Desc.Options(), errors.E_Id).(string)
 		message := proto.GetExtension(v.Desc.Options(), errors.E_Message).(string)
 		metadata := proto.GetExtension(v.Desc.Options(), errors.E_Metadata).([]*errors.Metadata)
 		metadataMap := make(map[string]string)
 		for _, m := range metadata {
-			metadataMap[m.Key] = m.Value
+			metadataMap[m.Key] = fmt.Sprintf(`func(ctx context.Context, id string) string {
+			msg := GetI18nMessage(ctx, id)
+			if msg != "" {
+				return msg
+			}
+			return id
+		}(ctx, "%s")`, m.Value)
 		}
-		metadataMapBs, _ := json.Marshal(metadataMap)
+		metadataMapBsStringBuilder := strings.Builder{}
+		metadataMapBsStringBuilder.WriteString("{\n")
+		for k, val := range metadataMap {
+			metadataMapBsStringBuilder.WriteString(fmt.Sprintf(`"%s": %s,`, k, val))
+			metadataMapBsStringBuilder.WriteString("\n")
+		}
+		metadataMapBsStringBuilder.WriteString("\n}")
+
 		err := &errorInfo{
 			Name:        string(enum.Desc.Name()),
 			Value:       string(v.Desc.Name()),
@@ -118,7 +131,7 @@ func genErrorsReason(_ *protogen.Plugin, _ *protogen.File, g *protogen.Generated
 			ID:          id,
 			Message:     message,
 			HasI18n:     id != "" && message != "",
-			Metadata:    string(metadataMapBs),
+			Metadata:    metadataMapBsStringBuilder.String(),
 			HasMetadata: metadataMap != nil && len(metadataMap) > 0,
 		}
 		ew.Errors = append(ew.Errors, err)
