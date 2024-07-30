@@ -32,12 +32,13 @@ func Error{{ .CamelValue }}WithContext({{ if .HasMetadata }}ctx{{else}}_{{ end }
         if len(args) > 0 {
             config.TemplateData = args[0]
         }
-        err := errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), fmt.Sprintf("{{ .Message }}", args...))
+        msg := "{{ .Message }}"
+        err := errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), msg)
         local, ok := FromContext(ctx)
         if ok {
             localize, err1 := local.Localize(config)
             if err1 != nil {
-                err = errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), fmt.Sprintf("{{ .Message }}", args...)).WithCause(err1)
+                err = errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), msg).WithCause(err1)
             } else {
                 err = errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), localize)
             }
