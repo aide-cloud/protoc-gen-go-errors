@@ -26,16 +26,16 @@ func Error{{ .CamelValue }}WithContext({{ if .HasMetadata }}ctx{{else}}_{{ end }
     {{ if .HasComment }}// ErrorI18n{{ .CamelValue }} {{ .Comment }}//  支持国际化输出
     {{ end -}}
     func ErrorI18n{{ .CamelValue }}(ctx context.Context, args ...interface{}) *errors.Error {
-        config := &i18n.LocalizeConfig{
-            MessageID: ErrorI18n{{ .CamelValue }}ID,
-        }
-        if len(args) > 0 {
-            config.TemplateData = args[0]
-        }
         msg := "{{ .Message }}"
+        if len(args) > 0 {
+            msg = fmt.Sprintf(msg, args...)
+        }
         err := errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), msg)
         local, ok := FromContext(ctx)
         if ok {
+            config := &i18n.LocalizeConfig{
+                MessageID: ErrorI18n{{ .CamelValue }}ID,
+            }
             localize, err1 := local.Localize(config)
             if err1 != nil {
                 err = errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), msg).WithCause(err1)
