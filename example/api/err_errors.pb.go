@@ -67,8 +67,8 @@ func ErrorSystemError(format string, args ...interface{}) *errors.Error {
 //	带上下文，支持国际化输出元数据
 func ErrorSystemErrorWithContext(ctx context.Context, format string, args ...interface{}) *errors.Error {
 	return errors.New(500, ErrorSystemErrorID, fmt.Sprintf(format, args...)).WithMetadata(map[string]string{
-		"1": GetI18nMessage(ctx, "1"),
 		"2": GetI18nMessage(ctx, "2"),
+		"1": GetI18nMessage(ctx, "1"),
 	})
 }
 
@@ -94,8 +94,8 @@ func ErrorI18nSystemError(ctx context.Context, args ...interface{}) *errors.Erro
 	}
 
 	return err.WithMetadata(map[string]string{
-		"1": GetI18nMessage(ctx, "1"),
 		"2": GetI18nMessage(ctx, "2"),
+		"1": GetI18nMessage(ctx, "1"),
 	})
 }
 
