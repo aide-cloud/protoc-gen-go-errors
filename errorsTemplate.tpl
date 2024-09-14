@@ -1,4 +1,6 @@
+{{/* gotype: github.com/aide-cloud/protoc-gen-go-errors.errorWrapper*/}}
 {{ range .Errors }}
+const Error{{ .CamelValue }}ID = "{{ .ID }}"
 
 {{ if .HasComment }}// Is{{.CamelValue}} {{ .Comment }}{{ end -}}
 func Is{{.CamelValue}}(err error) bool {
@@ -6,23 +8,21 @@ func Is{{.CamelValue}}(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == {{ .Name }}_{{ .Value }}.String() && e.Code == {{ .HTTPCode }}
+	return e.Reason == Error{{ .CamelValue }}ID && e.Code == {{ .HTTPCode }}
 }
 
 {{ if .HasComment }}// Error{{ .CamelValue }} {{ .Comment }}{{ end -}}
 func Error{{ .CamelValue }}(format string, args ...interface{}) *errors.Error {
-    return errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), fmt.Sprintf(format, args...))
+    return errors.New({{ .HTTPCode }}, Error{{ .CamelValue }}ID, fmt.Sprintf(format, args...))
 }
 
 {{ if .HasComment }}// Error{{ .CamelValue }}WithContext {{ .Comment }}//  带上下文，支持国际化输出元数据
 {{ end -}}
 func Error{{ .CamelValue }}WithContext({{ if .HasMetadata }}ctx{{else}}_{{ end }} context.Context, format string, args ...interface{}) *errors.Error {
-    return errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), fmt.Sprintf(format, args...)){{ if .HasMetadata }}.WithMetadata(map[string]string{{ .Metadata }}){{ end }}
+    return errors.New({{ .HTTPCode }}, Error{{ .CamelValue }}ID, fmt.Sprintf(format, args...)){{ if .HasMetadata }}.WithMetadata(map[string]string{{ .Metadata }}){{ end }}
 }
 
 {{ if .HasI18n }}
-    const ErrorI18n{{ .CamelValue }}ID = "{{ .ID }}"
-
     {{ if .HasComment }}// ErrorI18n{{ .CamelValue }} {{ .Comment }}//  支持国际化输出
     {{ end -}}
     func ErrorI18n{{ .CamelValue }}(ctx context.Context, args ...interface{}) *errors.Error {
@@ -30,17 +30,17 @@ func Error{{ .CamelValue }}WithContext({{ if .HasMetadata }}ctx{{else}}_{{ end }
         if len(args) > 0 {
             msg = fmt.Sprintf(msg, args...)
         }
-        err := errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), msg)
+        err := errors.New({{ .HTTPCode }}, Error{{ .CamelValue }}ID, msg)
         local, ok := FromContext(ctx)
         if ok {
             config := &i18n.LocalizeConfig{
-                MessageID: ErrorI18n{{ .CamelValue }}ID,
+                MessageID: Error{{ .CamelValue }}ID,
             }
             localize, err1 := local.Localize(config)
             if err1 != nil {
-                err = errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), msg).WithCause(err1)
+                err = errors.New({{ .HTTPCode }}, Error{{ .CamelValue }}ID, msg).WithCause(err1)
             } else {
-                err = errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), localize)
+                err = errors.New({{ .HTTPCode }}, Error{{ .CamelValue }}ID, localize)
             }
         }
 

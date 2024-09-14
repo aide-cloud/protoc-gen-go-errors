@@ -21,13 +21,13 @@ func FromContext(ctx context.Context) (*i18n.Localizer, bool) {
 }
 
 func WithLocalize(ctx context.Context, localize *i18n.Localizer) context.Context {
-	return context.WithValue(context.Background(), localizeKey{}, localize)
+	return context.WithValue(ctx, localizeKey{}, localize)
 }
 
 // GetI18nMessage 获取错误信息
 func GetI18nMessage(ctx context.Context, id string, args ...interface{}) string {
 	if id == "" {
-		return ""
+		return id
 	}
 	config := &i18n.LocalizeConfig{
 		MessageID: id,
@@ -37,114 +37,205 @@ func GetI18nMessage(ctx context.Context, id string, args ...interface{}) string 
 	}
 	local, ok := FromContext(ctx)
 	if !ok {
-		return ""
+		return id
 	}
 	localize, err := local.Localize(config)
 	if err != nil {
-		return ""
+		return id
 	}
 	return localize
 }
 
+const ErrorSystemErrorID = "SYSTEM_ERROR"
+
+// IsSystemError 系统错误
 func IsSystemError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_SYSTEM_ERROR.String() && e.Code == 500
+	return e.Reason == ErrorSystemErrorID && e.Code == 500
 }
 
+// ErrorSystemError 系统错误
 func ErrorSystemError(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, ErrorReason_SYSTEM_ERROR.String(), fmt.Sprintf(format, args...)).WithMetadata(map[string]string{"1": "1", "2": "2"})
+	return errors.New(500, ErrorSystemErrorID, fmt.Sprintf(format, args...))
 }
 
-const ErrorI18nSystemErrorID = "SYSTEM_ERROR"
+// ErrorSystemErrorWithContext 系统错误
+//
+//	带上下文，支持国际化输出元数据
+func ErrorSystemErrorWithContext(ctx context.Context, format string, args ...interface{}) *errors.Error {
+	return errors.New(500, ErrorSystemErrorID, fmt.Sprintf(format, args...)).WithMetadata(map[string]string{
+		"1": GetI18nMessage(ctx, "1"),
+		"2": GetI18nMessage(ctx, "2"),
+	})
+}
 
+// ErrorI18nSystemError 系统错误
+//  支持国际化输出
 func ErrorI18nSystemError(ctx context.Context, args ...interface{}) *errors.Error {
-	config := &i18n.LocalizeConfig{
-		MessageID: ErrorI18nSystemErrorID,
-	}
+	msg := "系统错误"
 	if len(args) > 0 {
-		config.TemplateData = args[0]
+		msg = fmt.Sprintf(msg, args...)
 	}
-	err := errors.New(500, ErrorReason_SYSTEM_ERROR.String(), fmt.Sprintf("系统错误", args...))
+	err := errors.New(500, ErrorSystemErrorID, msg)
 	local, ok := FromContext(ctx)
 	if ok {
+		config := &i18n.LocalizeConfig{
+			MessageID: ErrorSystemErrorID,
+		}
 		localize, err1 := local.Localize(config)
 		if err1 != nil {
-			err = errors.New(500, ErrorReason_SYSTEM_ERROR.String(), fmt.Sprintf("系统错误", args...)).WithCause(err1)
+			err = errors.New(500, ErrorSystemErrorID, msg).WithCause(err1)
 		} else {
-			err = errors.New(500, ErrorReason_SYSTEM_ERROR.String(), localize)
+			err = errors.New(500, ErrorSystemErrorID, localize)
 		}
 	}
 
-	return err.WithMetadata(map[string]string{"1": "1", "2": "2"})
+	return err.WithMetadata(map[string]string{
+		"1": GetI18nMessage(ctx, "1"),
+		"2": GetI18nMessage(ctx, "2"),
+	})
 }
+
+const ErrorSystemErrorMyUserErrID = "SYSTEM_ERROR__MY_USER_ERR"
+
+// IsSystemErrorMyUserErr 系统错误
+//
+//	MY_USER_ERR
+//	我的用户错误
+func IsSystemErrorMyUserErr(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorSystemErrorMyUserErrID && e.Code == 500
+}
+
+// ErrorSystemErrorMyUserErr 系统错误
+//
+//	MY_USER_ERR
+//	我的用户错误
+func ErrorSystemErrorMyUserErr(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, ErrorSystemErrorMyUserErrID, fmt.Sprintf(format, args...))
+}
+
+// ErrorSystemErrorMyUserErrWithContext 系统错误
+//
+//	MY_USER_ERR
+//	我的用户错误
+//	带上下文，支持国际化输出元数据
+func ErrorSystemErrorMyUserErrWithContext(ctx context.Context, format string, args ...interface{}) *errors.Error {
+	return errors.New(500, ErrorSystemErrorMyUserErrID, fmt.Sprintf(format, args...)).WithMetadata(map[string]string{
+		"11": GetI18nMessage(ctx, "11"),
+		"22": GetI18nMessage(ctx, "22"),
+	})
+}
+
+// ErrorI18nSystemErrorMyUserErr 系统错误
+//  MY_USER_ERR
+//  我的用户错误
+//  支持国际化输出
+func ErrorI18nSystemErrorMyUserErr(ctx context.Context, args ...interface{}) *errors.Error {
+	msg := "我的用户错误"
+	if len(args) > 0 {
+		msg = fmt.Sprintf(msg, args...)
+	}
+	err := errors.New(500, ErrorSystemErrorMyUserErrID, msg)
+	local, ok := FromContext(ctx)
+	if ok {
+		config := &i18n.LocalizeConfig{
+			MessageID: ErrorSystemErrorMyUserErrID,
+		}
+		localize, err1 := local.Localize(config)
+		if err1 != nil {
+			err = errors.New(500, ErrorSystemErrorMyUserErrID, msg).WithCause(err1)
+		} else {
+			err = errors.New(500, ErrorSystemErrorMyUserErrID, localize)
+		}
+	}
+
+	return err.WithMetadata(map[string]string{
+		"11": GetI18nMessage(ctx, "11"),
+		"22": GetI18nMessage(ctx, "22"),
+	})
+}
+
+const ErrorUserNotFoundID = "USER_NOT_FOUND"
 
 func IsUserNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_USER_NOT_FOUND.String() && e.Code == 404
+	return e.Reason == ErrorUserNotFoundID && e.Code == 404
 }
 
 func ErrorUserNotFound(format string, args ...interface{}) *errors.Error {
-	return errors.New(404, ErrorReason_USER_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+	return errors.New(404, ErrorUserNotFoundID, fmt.Sprintf(format, args...))
 }
 
-const ErrorI18nUserNotFoundID = "USER_NOT_FOUND"
+func ErrorUserNotFoundWithContext(_ context.Context, format string, args ...interface{}) *errors.Error {
+	return errors.New(404, ErrorUserNotFoundID, fmt.Sprintf(format, args...))
+}
 
 func ErrorI18nUserNotFound(ctx context.Context, args ...interface{}) *errors.Error {
-	config := &i18n.LocalizeConfig{
-		MessageID: ErrorI18nUserNotFoundID,
-	}
+	msg := "用户不存在"
 	if len(args) > 0 {
-		config.TemplateData = args[0]
+		msg = fmt.Sprintf(msg, args...)
 	}
-	err := errors.New(404, ErrorReason_USER_NOT_FOUND.String(), fmt.Sprintf("用户不存在", args...))
+	err := errors.New(404, ErrorUserNotFoundID, msg)
 	local, ok := FromContext(ctx)
 	if ok {
+		config := &i18n.LocalizeConfig{
+			MessageID: ErrorUserNotFoundID,
+		}
 		localize, err1 := local.Localize(config)
 		if err1 != nil {
-			err = errors.New(404, ErrorReason_USER_NOT_FOUND.String(), fmt.Sprintf("用户不存在", args...)).WithCause(err1)
+			err = errors.New(404, ErrorUserNotFoundID, msg).WithCause(err1)
 		} else {
-			err = errors.New(404, ErrorReason_USER_NOT_FOUND.String(), localize)
+			err = errors.New(404, ErrorUserNotFoundID, localize)
 		}
 	}
 
 	return err
 }
 
+const ErrorUserAlreadyExistsID = "USER_ALREADY_EXISTS"
+
 func IsUserAlreadyExists(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_USER_ALREADY_EXISTS.String() && e.Code == 400
+	return e.Reason == ErrorUserAlreadyExistsID && e.Code == 400
 }
 
 func ErrorUserAlreadyExists(format string, args ...interface{}) *errors.Error {
-	return errors.New(400, ErrorReason_USER_ALREADY_EXISTS.String(), fmt.Sprintf(format, args...))
+	return errors.New(400, ErrorUserAlreadyExistsID, fmt.Sprintf(format, args...))
 }
 
-const ErrorI18nUserAlreadyExistsID = "USER_ALREADY_EXISTS"
+func ErrorUserAlreadyExistsWithContext(_ context.Context, format string, args ...interface{}) *errors.Error {
+	return errors.New(400, ErrorUserAlreadyExistsID, fmt.Sprintf(format, args...))
+}
 
 func ErrorI18nUserAlreadyExists(ctx context.Context, args ...interface{}) *errors.Error {
-	config := &i18n.LocalizeConfig{
-		MessageID: ErrorI18nUserAlreadyExistsID,
-	}
+	msg := "用户已存在"
 	if len(args) > 0 {
-		config.TemplateData = args[0]
+		msg = fmt.Sprintf(msg, args...)
 	}
-	err := errors.New(400, ErrorReason_USER_ALREADY_EXISTS.String(), fmt.Sprintf("用户已存在", args...))
+	err := errors.New(400, ErrorUserAlreadyExistsID, msg)
 	local, ok := FromContext(ctx)
 	if ok {
+		config := &i18n.LocalizeConfig{
+			MessageID: ErrorUserAlreadyExistsID,
+		}
 		localize, err1 := local.Localize(config)
 		if err1 != nil {
-			err = errors.New(400, ErrorReason_USER_ALREADY_EXISTS.String(), fmt.Sprintf("用户已存在", args...)).WithCause(err1)
+			err = errors.New(400, ErrorUserAlreadyExistsID, msg).WithCause(err1)
 		} else {
-			err = errors.New(400, ErrorReason_USER_ALREADY_EXISTS.String(), localize)
+			err = errors.New(400, ErrorUserAlreadyExistsID, localize)
 		}
 	}
 

@@ -55,7 +55,7 @@ func generateFileContent(gen *protogen.Plugin, file *protogen.File, g *protogen.
 	g.P()
 	g.P("func WithLocalize(ctx context.Context, localize *i18n.Localizer) context.Context {\n\treturn context.WithValue(ctx, localizeKey{}, localize)\n}")
 	g.P()
-	g.P("// GetI18nMessage 获取错误信息\nfunc GetI18nMessage(ctx context.Context, id string, args ...interface{}) string {\n\tif id == \"\" {\n\t\treturn \"\"\n\t}\n\tconfig := &i18n.LocalizeConfig{\n\t\tMessageID: id,\n\t}\n\tif len(args) > 0 {\n\t\tconfig.TemplateData = args[0]\n\t}\n\tlocal, ok := FromContext(ctx)\n\tif !ok {\n\t\treturn \"\"\n\t}\n\tlocalize, err := local.Localize(config)\n\tif err != nil {\n\t\treturn \"\"\n\t}\n\treturn localize\n}")
+	g.P("// GetI18nMessage 获取错误信息\nfunc GetI18nMessage(ctx context.Context, id string, args ...interface{}) string {\n\tif id == \"\" {\n\t\treturn id\n\t}\n\tconfig := &i18n.LocalizeConfig{\n\t\tMessageID: id,\n\t}\n\tif len(args) > 0 {\n\t\tconfig.TemplateData = args[0]\n\t}\n\tlocal, ok := FromContext(ctx)\n\tif !ok {\n\t\treturn id\n\t}\n\tlocalize, err := local.Localize(config)\n\tif err != nil {\n\t\treturn id\n\t}\n\treturn localize\n}")
 	g.P()
 	index := 0
 	for _, enum := range file.Enums {
@@ -103,15 +103,11 @@ func genErrorsReason(_ *protogen.Plugin, _ *protogen.File, g *protogen.Generated
 		id := proto.GetExtension(v.Desc.Options(), errors.E_Id).(string)
 		message := proto.GetExtension(v.Desc.Options(), errors.E_Message).(string)
 		metadata := proto.GetExtension(v.Desc.Options(), errors.E_Metadata).([]*errors.Metadata)
+		bizReasons := proto.GetExtension(v.Desc.Options(), errors.E_BizReason).([]*errors.BizReason)
+
 		metadataMap := make(map[string]string)
 		for _, m := range metadata {
-			metadataMap[m.Key] = fmt.Sprintf(`func(ctx context.Context, id string) string {
-			msg := GetI18nMessage(ctx, id)
-			if msg != "" {
-				return msg
-			}
-			return id
-		}(ctx, "%s")`, m.Value)
+			metadataMap[m.Key] = fmt.Sprintf(`GetI18nMessage(ctx, "%s")`, m.Value)
 		}
 		metadataMapBsStringBuilder := strings.Builder{}
 		metadataMapBsStringBuilder.WriteString("{\n")
@@ -121,7 +117,7 @@ func genErrorsReason(_ *protogen.Plugin, _ *protogen.File, g *protogen.Generated
 		}
 		metadataMapBsStringBuilder.WriteString("\n}")
 
-		err := &errorInfo{
+		err := errorInfo{
 			Name:        string(enum.Desc.Name()),
 			Value:       string(v.Desc.Name()),
 			HTTPCode:    enumCode,
@@ -130,11 +126,41 @@ func genErrorsReason(_ *protogen.Plugin, _ *protogen.File, g *protogen.Generated
 			HasComment:  len(comment) > 0,
 			ID:          id,
 			Message:     message,
-			HasI18n:     id != "" && message != "",
+			HasI18n:     id != "" || message != "",
 			Metadata:    metadataMapBsStringBuilder.String(),
 			HasMetadata: metadataMap != nil && len(metadataMap) > 0,
 		}
-		ew.Errors = append(ew.Errors, err)
+		if err.ID == "" {
+			err.ID = err.Name + "_" + err.Value
+		}
+		ew.Errors = append(ew.Errors, &err)
+		if len(bizReasons) > 0 {
+			for _, br := range bizReasons {
+				bizErr := err
+				if br.GetReason() != "" {
+					bizErr.CamelValue += case2Camel(br.GetReason())
+					bizErr.ID += "__" + br.GetReason()
+					bizErr.Comment += "//  " + br.GetReason() + "\n"
+				}
+
+				if br.GetMessage() != "" {
+					bizErr.Message = br.GetMessage()
+					bizErr.Comment += "//  " + br.GetMessage() + "\n"
+				}
+
+				if len(br.GetMetadata()) > 0 {
+					bizMetadataMapBsStringBuilder := strings.Builder{}
+					bizMetadataMapBsStringBuilder.WriteString("{\n")
+					for _, val := range br.GetMetadata() {
+						bizMetadataMapBsStringBuilder.WriteString(fmt.Sprintf(`"%s": %s,`, val.GetKey(), fmt.Sprintf(`GetI18nMessage(ctx, "%s")`, val.GetValue())))
+						bizMetadataMapBsStringBuilder.WriteString("\n")
+					}
+					bizMetadataMapBsStringBuilder.WriteString("\n}")
+					bizErr.Metadata = bizMetadataMapBsStringBuilder.String()
+				}
+				ew.Errors = append(ew.Errors, &bizErr)
+			}
+		}
 	}
 	if len(ew.Errors) == 0 {
 		return true

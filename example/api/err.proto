@@ -11,6 +11,7 @@ option java_package = "example.api";
 enum ErrorReason {
 	option (errors.default_code) = 500;
 
+	// 系统错误
 	SYSTEM_ERROR = 0 [
 		(errors.code) = 500,
 		(errors.id) = "SYSTEM_ERROR",
@@ -22,6 +23,18 @@ enum ErrorReason {
 		(errors.metadata) = {
 			key: "2",
 			value: "2"
+		},
+		(errors.biz_reason)= {
+			reason: "MY_USER_ERR",
+			message: "我的用户错误",
+			metadata: {
+				key: "11",
+				value: "11"
+			},
+			metadata: {
+				key: "22",
+				value: "22"
+			}
 		}
 	];
 
