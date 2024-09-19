@@ -67,8 +67,8 @@ func ErrorSystemError(format string, args ...interface{}) *errors.Error {
 //	带上下文，支持国际化输出元数据
 func ErrorSystemErrorWithContext(ctx context.Context, format string, args ...interface{}) *errors.Error {
 	return errors.New(500, ErrorSystemErrorID, fmt.Sprintf(format, args...)).WithMetadata(map[string]string{
-		"2": GetI18nMessage(ctx, "2"),
 		"1": GetI18nMessage(ctx, "1"),
+		"2": GetI18nMessage(ctx, "2"),
 	})
 }
 
@@ -94,8 +94,8 @@ func ErrorI18nSystemError(ctx context.Context, args ...interface{}) *errors.Erro
 	}
 
 	return err.WithMetadata(map[string]string{
-		"2": GetI18nMessage(ctx, "2"),
 		"1": GetI18nMessage(ctx, "1"),
+		"2": GetI18nMessage(ctx, "2"),
 	})
 }
 
@@ -128,6 +128,8 @@ func ErrorSystemErrorMyUserErr(format string, args ...interface{}) *errors.Error
 //	带上下文，支持国际化输出元数据
 func ErrorSystemErrorMyUserErrWithContext(ctx context.Context, format string, args ...interface{}) *errors.Error {
 	return errors.New(500, ErrorSystemErrorMyUserErrID, fmt.Sprintf(format, args...)).WithMetadata(map[string]string{
+		"1":  GetI18nMessage(ctx, "1"),
+		"2":  GetI18nMessage(ctx, "2"),
 		"11": GetI18nMessage(ctx, "11"),
 		"22": GetI18nMessage(ctx, "22"),
 	})
@@ -157,8 +159,75 @@ func ErrorI18nSystemErrorMyUserErr(ctx context.Context, args ...interface{}) *er
 	}
 
 	return err.WithMetadata(map[string]string{
+		"1":  GetI18nMessage(ctx, "1"),
+		"2":  GetI18nMessage(ctx, "2"),
 		"11": GetI18nMessage(ctx, "11"),
 		"22": GetI18nMessage(ctx, "22"),
+	})
+}
+
+const ErrorSystemErrorCaptchaErrID = "SYSTEM_ERROR__CAPTCHA_ERR"
+
+// IsSystemErrorCaptchaErr 系统错误
+//
+//	CAPTCHA_ERR
+//	验证码错误
+func IsSystemErrorCaptchaErr(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorSystemErrorCaptchaErrID && e.Code == 500
+}
+
+// ErrorSystemErrorCaptchaErr 系统错误
+//
+//	CAPTCHA_ERR
+//	验证码错误
+func ErrorSystemErrorCaptchaErr(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, ErrorSystemErrorCaptchaErrID, fmt.Sprintf(format, args...))
+}
+
+// ErrorSystemErrorCaptchaErrWithContext 系统错误
+//
+//	CAPTCHA_ERR
+//	验证码错误
+//	带上下文，支持国际化输出元数据
+func ErrorSystemErrorCaptchaErrWithContext(ctx context.Context, format string, args ...interface{}) *errors.Error {
+	return errors.New(500, ErrorSystemErrorCaptchaErrID, fmt.Sprintf(format, args...)).WithMetadata(map[string]string{
+		"1":       GetI18nMessage(ctx, "1"),
+		"2":       GetI18nMessage(ctx, "2"),
+		"captcha": GetI18nMessage(ctx, "CAPTCHA_ERR"),
+	})
+}
+
+// ErrorI18nSystemErrorCaptchaErr 系统错误
+//  CAPTCHA_ERR
+//  验证码错误
+//  支持国际化输出
+func ErrorI18nSystemErrorCaptchaErr(ctx context.Context, args ...interface{}) *errors.Error {
+	msg := "验证码错误"
+	if len(args) > 0 {
+		msg = fmt.Sprintf(msg, args...)
+	}
+	err := errors.New(500, ErrorSystemErrorCaptchaErrID, msg)
+	local, ok := FromContext(ctx)
+	if ok {
+		config := &i18n.LocalizeConfig{
+			MessageID: ErrorSystemErrorCaptchaErrID,
+		}
+		localize, err1 := local.Localize(config)
+		if err1 != nil {
+			err = errors.New(500, ErrorSystemErrorCaptchaErrID, msg).WithCause(err1)
+		} else {
+			err = errors.New(500, ErrorSystemErrorCaptchaErrID, localize)
+		}
+	}
+
+	return err.WithMetadata(map[string]string{
+		"1":       GetI18nMessage(ctx, "1"),
+		"2":       GetI18nMessage(ctx, "2"),
+		"captcha": GetI18nMessage(ctx, "CAPTCHA_ERR"),
 	})
 }
 

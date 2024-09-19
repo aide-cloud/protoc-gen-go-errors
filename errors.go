@@ -151,12 +151,17 @@ func genErrorsReason(_ *protogen.Plugin, _ *protogen.File, g *protogen.Generated
 				if len(br.GetMetadata()) > 0 {
 					bizMetadataMapBsStringBuilder := strings.Builder{}
 					bizMetadataMapBsStringBuilder.WriteString("{\n")
+					for k, val := range metadataMap {
+						bizMetadataMapBsStringBuilder.WriteString(fmt.Sprintf(`"%s": %s,`, k, val))
+						bizMetadataMapBsStringBuilder.WriteString("\n")
+					}
 					for _, val := range br.GetMetadata() {
 						bizMetadataMapBsStringBuilder.WriteString(fmt.Sprintf(`"%s": %s,`, val.GetKey(), fmt.Sprintf(`GetI18nMessage(ctx, "%s")`, val.GetValue())))
 						bizMetadataMapBsStringBuilder.WriteString("\n")
 					}
 					bizMetadataMapBsStringBuilder.WriteString("\n}")
 					bizErr.Metadata = bizMetadataMapBsStringBuilder.String()
+					bizErr.HasMetadata = true
 				}
 				ew.Errors = append(ew.Errors, &bizErr)
 			}

@@ -35,6 +35,12 @@ enum ErrorReason {
 				key: "22",
 				value: "22"
 			}
+		},
+		(errors.biz_reason) = {
+			// 验证码错误
+			reason: "CAPTCHA_ERR"
+			message: "验证码错误",
+			metadata: {key: "captcha", value: "CAPTCHA_ERR"}
 		}
 	];
 
