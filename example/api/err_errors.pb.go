@@ -25,9 +25,12 @@ func WithLocalize(ctx context.Context, localize *i18n.Localizer) context.Context
 }
 
 // GetI18nMessage 获取错误信息
-func GetI18nMessage(ctx context.Context, id string, args ...interface{}) string {
+func GetI18nMessage(ctx context.Context, id, defaultMsg string, args ...interface{}) string {
+	if defaultMsg == "" {
+		defaultMsg = id
+	}
 	if id == "" {
-		return id
+		return defaultMsg
 	}
 	config := &i18n.LocalizeConfig{
 		MessageID: id,
@@ -37,11 +40,11 @@ func GetI18nMessage(ctx context.Context, id string, args ...interface{}) string 
 	}
 	local, ok := FromContext(ctx)
 	if !ok {
-		return id
+		return defaultMsg
 	}
 	localize, err := local.Localize(config)
 	if err != nil {
-		return id
+		return defaultMsg
 	}
 	return localize
 }
@@ -67,8 +70,8 @@ func ErrorSystemError(format string, args ...interface{}) *errors.Error {
 //	带上下文，支持国际化输出元数据
 func ErrorSystemErrorWithContext(ctx context.Context, format string, args ...interface{}) *errors.Error {
 	return errors.New(500, ErrorSystemErrorID, fmt.Sprintf(format, args...)).WithMetadata(map[string]string{
-		"1": GetI18nMessage(ctx, "1"),
-		"2": GetI18nMessage(ctx, "2"),
+		"1": GetI18nMessage(ctx, "1", ""),
+		"2": GetI18nMessage(ctx, "2", ""),
 	})
 }
 
@@ -94,8 +97,8 @@ func ErrorI18nSystemError(ctx context.Context, args ...interface{}) *errors.Erro
 	}
 
 	return err.WithMetadata(map[string]string{
-		"1": GetI18nMessage(ctx, "1"),
-		"2": GetI18nMessage(ctx, "2"),
+		"1": GetI18nMessage(ctx, "1", ""),
+		"2": GetI18nMessage(ctx, "2", ""),
 	})
 }
 
@@ -128,10 +131,10 @@ func ErrorSystemErrorMyUserErr(format string, args ...interface{}) *errors.Error
 //	带上下文，支持国际化输出元数据
 func ErrorSystemErrorMyUserErrWithContext(ctx context.Context, format string, args ...interface{}) *errors.Error {
 	return errors.New(500, ErrorSystemErrorMyUserErrID, fmt.Sprintf(format, args...)).WithMetadata(map[string]string{
-		"1":  GetI18nMessage(ctx, "1"),
-		"2":  GetI18nMessage(ctx, "2"),
-		"11": GetI18nMessage(ctx, "11"),
-		"22": GetI18nMessage(ctx, "22"),
+		"2":  GetI18nMessage(ctx, "2", ""),
+		"1":  GetI18nMessage(ctx, "1", ""),
+		"11": GetI18nMessage(ctx, "11", "我是默认值"),
+		"22": GetI18nMessage(ctx, "22", ""),
 	})
 }
 
@@ -159,10 +162,10 @@ func ErrorI18nSystemErrorMyUserErr(ctx context.Context, args ...interface{}) *er
 	}
 
 	return err.WithMetadata(map[string]string{
-		"1":  GetI18nMessage(ctx, "1"),
-		"2":  GetI18nMessage(ctx, "2"),
-		"11": GetI18nMessage(ctx, "11"),
-		"22": GetI18nMessage(ctx, "22"),
+		"2":  GetI18nMessage(ctx, "2", ""),
+		"1":  GetI18nMessage(ctx, "1", ""),
+		"11": GetI18nMessage(ctx, "11", "我是默认值"),
+		"22": GetI18nMessage(ctx, "22", ""),
 	})
 }
 
@@ -195,9 +198,9 @@ func ErrorSystemErrorCaptchaErr(format string, args ...interface{}) *errors.Erro
 //	带上下文，支持国际化输出元数据
 func ErrorSystemErrorCaptchaErrWithContext(ctx context.Context, format string, args ...interface{}) *errors.Error {
 	return errors.New(500, ErrorSystemErrorCaptchaErrID, fmt.Sprintf(format, args...)).WithMetadata(map[string]string{
-		"1":       GetI18nMessage(ctx, "1"),
-		"2":       GetI18nMessage(ctx, "2"),
-		"captcha": GetI18nMessage(ctx, "CAPTCHA_ERR"),
+		"1":       GetI18nMessage(ctx, "1", ""),
+		"2":       GetI18nMessage(ctx, "2", ""),
+		"captcha": GetI18nMessage(ctx, "CAPTCHA_ERR", ""),
 	})
 }
 
@@ -225,9 +228,9 @@ func ErrorI18nSystemErrorCaptchaErr(ctx context.Context, args ...interface{}) *e
 	}
 
 	return err.WithMetadata(map[string]string{
-		"1":       GetI18nMessage(ctx, "1"),
-		"2":       GetI18nMessage(ctx, "2"),
-		"captcha": GetI18nMessage(ctx, "CAPTCHA_ERR"),
+		"1":       GetI18nMessage(ctx, "1", ""),
+		"2":       GetI18nMessage(ctx, "2", ""),
+		"captcha": GetI18nMessage(ctx, "CAPTCHA_ERR", ""),
 	})
 }
 

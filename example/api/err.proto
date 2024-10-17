@@ -29,7 +29,8 @@ enum ErrorReason {
 			message: "我的用户错误",
 			metadata: {
 				key: "11",
-				value: "11"
+				value: "11",
+				defaultValue: "我是默认值"
 			},
 			metadata: {
 				key: "22",
@@ -40,7 +41,7 @@ enum ErrorReason {
 			// 验证码错误
 			reason: "CAPTCHA_ERR"
 			message: "验证码错误",
-			metadata: {key: "captcha", value: "CAPTCHA_ERR"}
+			metadata: {key: "captcha", value: "CAPTCHA_ERR", }
 		}
 	];
 

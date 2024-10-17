@@ -55,7 +55,30 @@ func generateFileContent(gen *protogen.Plugin, file *protogen.File, g *protogen.
 	g.P()
 	g.P("func WithLocalize(ctx context.Context, localize *i18n.Localizer) context.Context {\n\treturn context.WithValue(ctx, localizeKey{}, localize)\n}")
 	g.P()
-	g.P("// GetI18nMessage 获取错误信息\nfunc GetI18nMessage(ctx context.Context, id string, args ...interface{}) string {\n\tif id == \"\" {\n\t\treturn id\n\t}\n\tconfig := &i18n.LocalizeConfig{\n\t\tMessageID: id,\n\t}\n\tif len(args) > 0 {\n\t\tconfig.TemplateData = args[0]\n\t}\n\tlocal, ok := FromContext(ctx)\n\tif !ok {\n\t\treturn id\n\t}\n\tlocalize, err := local.Localize(config)\n\tif err != nil {\n\t\treturn id\n\t}\n\treturn localize\n}")
+	g.P(`// GetI18nMessage 获取错误信息
+func GetI18nMessage(ctx context.Context, id, defaultMsg string, args ...interface{}) string {
+	if defaultMsg == "" {
+		defaultMsg = id
+	}
+	if id == "" {
+		return defaultMsg
+	}
+	config := &i18n.LocalizeConfig{
+		MessageID: id,
+	}
+	if len(args) > 0 {
+		config.TemplateData = args[0]
+	}
+	local, ok := FromContext(ctx)
+	if !ok {
+		return defaultMsg
+	}
+	localize, err := local.Localize(config)
+	if err != nil {
+		return defaultMsg
+	}
+	return localize
+}`)
 	g.P()
 	index := 0
 	for _, enum := range file.Enums {
@@ -107,7 +130,7 @@ func genErrorsReason(_ *protogen.Plugin, _ *protogen.File, g *protogen.Generated
 
 		metadataMap := make(map[string]string)
 		for _, m := range metadata {
-			metadataMap[m.Key] = fmt.Sprintf(`GetI18nMessage(ctx, "%s")`, m.Value)
+			metadataMap[m.Key] = fmt.Sprintf(`GetI18nMessage(ctx, "%s", "%s")`, m.Value, m.DefaultValue)
 		}
 		metadataMapBsStringBuilder := strings.Builder{}
 		metadataMapBsStringBuilder.WriteString("{\n")
@@ -156,7 +179,7 @@ func genErrorsReason(_ *protogen.Plugin, _ *protogen.File, g *protogen.Generated
 						bizMetadataMapBsStringBuilder.WriteString("\n")
 					}
 					for _, val := range br.GetMetadata() {
-						bizMetadataMapBsStringBuilder.WriteString(fmt.Sprintf(`"%s": %s,`, val.GetKey(), fmt.Sprintf(`GetI18nMessage(ctx, "%s")`, val.GetValue())))
+						bizMetadataMapBsStringBuilder.WriteString(fmt.Sprintf(`"%s": %s,`, val.GetKey(), fmt.Sprintf(`GetI18nMessage(ctx, "%s", "%s")`, val.GetValue(), val.GetDefaultValue())))
 						bizMetadataMapBsStringBuilder.WriteString("\n")
 					}
 					bizMetadataMapBsStringBuilder.WriteString("\n}")
