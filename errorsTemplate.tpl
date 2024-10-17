@@ -23,6 +23,11 @@ func Error{{ .CamelValue }}WithContext({{ if .HasMetadata }}ctx{{else}}_{{ end }
 }
 
 {{ if .HasI18n }}
+    var _{{ .CamelValue }}Msg = &i18n.Message{
+        ID:    Error{{ .CamelValue }}ID,
+        One:   "{{ .Message }}",
+        Other: "{{ .Message }}",
+    }
     {{ if .HasComment }}// ErrorI18n{{ .CamelValue }} {{ .Comment }}//  支持国际化输出
     {{ end -}}
     func ErrorI18n{{ .CamelValue }}(ctx context.Context, args ...interface{}) *errors.Error {
@@ -35,6 +40,7 @@ func Error{{ .CamelValue }}WithContext({{ if .HasMetadata }}ctx{{else}}_{{ end }
         if ok {
             config := &i18n.LocalizeConfig{
                 MessageID: Error{{ .CamelValue }}ID,
+                DefaultMessage: _{{ .CamelValue }}Msg,
             }
             localize, err1 := local.Localize(config)
             if err1 != nil {

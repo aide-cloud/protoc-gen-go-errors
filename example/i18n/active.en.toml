@@ -1,14 +1,19 @@
 [SYSTEM_ERROR]
-description = "SYSTEM_ERROR"
-one = "System error"
-other = "System error"
+one = "系统错误en"
+other = "系统错误en"
+
+[SYSTEM_ERROR__CAPTCHA_ERR]
+one = "验证码错误en"
+other = "验证码错误en"
+
+[SYSTEM_ERROR__MY_USER_ERR]
+one = "我的用户错误en"
+other = "我的用户错误en"
 
 [USER_ALREADY_EXISTS]
-description = "USER_ALREADY_EXISTS"
-one = "User already exists"
-other = "User already exists"
+one = "用户已存在en"
+other = "用户已存在en"
 
 [USER_NOT_FOUND]
-description = "USER_NOT_FOUND"
-one = "User not found"
-other = "User not found"
+one = "用户不存在en"
+other = "用户不存在en"

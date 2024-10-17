@@ -1,14 +1,19 @@
 [SYSTEM_ERROR]
-description = "SYSTEM_ERROR"
-hash = "sha1-9a1c310fd3bf045bad71dd0047ae774452bb9709"
+hash = "sha1-eda9b06d39941d9e19a85eb51b4778ab724bc78b"
 other = "系统错误"
 
+[SYSTEM_ERROR__CAPTCHA_ERR]
+hash = "sha1-7c142fef1a2ef2cf013d59fa626258c385072dd4"
+other = "验证码错误"
+
+[SYSTEM_ERROR__MY_USER_ERR]
+hash = "sha1-f2f3c01bfc1faf3a56db0bbc9c5186b7f11ef7fd"
+other = "我的用户错误"
+
 [USER_ALREADY_EXISTS]
-description = "USER_ALREADY_EXISTS"
-hash = "sha1-267c315d8d247beeaaaec1f7664653b7607c956e"
+hash = "sha1-7d4269e11433043fb1cae02201acd9bd57a5d100"
 other = "用户已存在"
 
 [USER_NOT_FOUND]
-description = "USER_NOT_FOUND"
-hash = "sha1-fef60bf049c7ca445690b413860f65d75d6f5fbf"
+hash = "sha1-1b2a3e6bd117d645641c9b0f79c5fb5dcbc5bd44"
 other = "用户不存在"

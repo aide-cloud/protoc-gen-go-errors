@@ -75,6 +75,12 @@ func ErrorSystemErrorWithContext(ctx context.Context, format string, args ...int
 	})
 }
 
+var _SystemErrorMsg = &i18n.Message{
+	ID:    ErrorSystemErrorID,
+	One:   "系统错误",
+	Other: "系统错误",
+}
+
 // ErrorI18nSystemError 系统错误
 //  支持国际化输出
 func ErrorI18nSystemError(ctx context.Context, args ...interface{}) *errors.Error {
@@ -86,7 +92,8 @@ func ErrorI18nSystemError(ctx context.Context, args ...interface{}) *errors.Erro
 	local, ok := FromContext(ctx)
 	if ok {
 		config := &i18n.LocalizeConfig{
-			MessageID: ErrorSystemErrorID,
+			MessageID:      ErrorSystemErrorID,
+			DefaultMessage: _SystemErrorMsg,
 		}
 		localize, err1 := local.Localize(config)
 		if err1 != nil {
@@ -131,11 +138,17 @@ func ErrorSystemErrorMyUserErr(format string, args ...interface{}) *errors.Error
 //	带上下文，支持国际化输出元数据
 func ErrorSystemErrorMyUserErrWithContext(ctx context.Context, format string, args ...interface{}) *errors.Error {
 	return errors.New(500, ErrorSystemErrorMyUserErrID, fmt.Sprintf(format, args...)).WithMetadata(map[string]string{
-		"2":  GetI18nMessage(ctx, "2", ""),
 		"1":  GetI18nMessage(ctx, "1", ""),
+		"2":  GetI18nMessage(ctx, "2", ""),
 		"11": GetI18nMessage(ctx, "11", "我是默认值"),
 		"22": GetI18nMessage(ctx, "22", ""),
 	})
+}
+
+var _SystemErrorMyUserErrMsg = &i18n.Message{
+	ID:    ErrorSystemErrorMyUserErrID,
+	One:   "我的用户错误",
+	Other: "我的用户错误",
 }
 
 // ErrorI18nSystemErrorMyUserErr 系统错误
@@ -151,7 +164,8 @@ func ErrorI18nSystemErrorMyUserErr(ctx context.Context, args ...interface{}) *er
 	local, ok := FromContext(ctx)
 	if ok {
 		config := &i18n.LocalizeConfig{
-			MessageID: ErrorSystemErrorMyUserErrID,
+			MessageID:      ErrorSystemErrorMyUserErrID,
+			DefaultMessage: _SystemErrorMyUserErrMsg,
 		}
 		localize, err1 := local.Localize(config)
 		if err1 != nil {
@@ -162,8 +176,8 @@ func ErrorI18nSystemErrorMyUserErr(ctx context.Context, args ...interface{}) *er
 	}
 
 	return err.WithMetadata(map[string]string{
-		"2":  GetI18nMessage(ctx, "2", ""),
 		"1":  GetI18nMessage(ctx, "1", ""),
+		"2":  GetI18nMessage(ctx, "2", ""),
 		"11": GetI18nMessage(ctx, "11", "我是默认值"),
 		"22": GetI18nMessage(ctx, "22", ""),
 	})
@@ -204,6 +218,12 @@ func ErrorSystemErrorCaptchaErrWithContext(ctx context.Context, format string, a
 	})
 }
 
+var _SystemErrorCaptchaErrMsg = &i18n.Message{
+	ID:    ErrorSystemErrorCaptchaErrID,
+	One:   "验证码错误",
+	Other: "验证码错误",
+}
+
 // ErrorI18nSystemErrorCaptchaErr 系统错误
 //  CAPTCHA_ERR
 //  验证码错误
@@ -217,7 +237,8 @@ func ErrorI18nSystemErrorCaptchaErr(ctx context.Context, args ...interface{}) *e
 	local, ok := FromContext(ctx)
 	if ok {
 		config := &i18n.LocalizeConfig{
-			MessageID: ErrorSystemErrorCaptchaErrID,
+			MessageID:      ErrorSystemErrorCaptchaErrID,
+			DefaultMessage: _SystemErrorCaptchaErrMsg,
 		}
 		localize, err1 := local.Localize(config)
 		if err1 != nil {
@@ -252,6 +273,12 @@ func ErrorUserNotFoundWithContext(_ context.Context, format string, args ...inte
 	return errors.New(404, ErrorUserNotFoundID, fmt.Sprintf(format, args...))
 }
 
+var _UserNotFoundMsg = &i18n.Message{
+	ID:    ErrorUserNotFoundID,
+	One:   "用户不存在",
+	Other: "用户不存在",
+}
+
 func ErrorI18nUserNotFound(ctx context.Context, args ...interface{}) *errors.Error {
 	msg := "用户不存在"
 	if len(args) > 0 {
@@ -261,7 +288,8 @@ func ErrorI18nUserNotFound(ctx context.Context, args ...interface{}) *errors.Err
 	local, ok := FromContext(ctx)
 	if ok {
 		config := &i18n.LocalizeConfig{
-			MessageID: ErrorUserNotFoundID,
+			MessageID:      ErrorUserNotFoundID,
+			DefaultMessage: _UserNotFoundMsg,
 		}
 		localize, err1 := local.Localize(config)
 		if err1 != nil {
@@ -292,6 +320,12 @@ func ErrorUserAlreadyExistsWithContext(_ context.Context, format string, args ..
 	return errors.New(400, ErrorUserAlreadyExistsID, fmt.Sprintf(format, args...))
 }
 
+var _UserAlreadyExistsMsg = &i18n.Message{
+	ID:    ErrorUserAlreadyExistsID,
+	One:   "用户已存在",
+	Other: "用户已存在",
+}
+
 func ErrorI18nUserAlreadyExists(ctx context.Context, args ...interface{}) *errors.Error {
 	msg := "用户已存在"
 	if len(args) > 0 {
@@ -301,7 +335,8 @@ func ErrorI18nUserAlreadyExists(ctx context.Context, args ...interface{}) *error
 	local, ok := FromContext(ctx)
 	if ok {
 		config := &i18n.LocalizeConfig{
-			MessageID: ErrorUserAlreadyExistsID,
+			MessageID:      ErrorUserAlreadyExistsID,
+			DefaultMessage: _UserAlreadyExistsMsg,
 		}
 		localize, err1 := local.Localize(config)
 		if err1 != nil {
