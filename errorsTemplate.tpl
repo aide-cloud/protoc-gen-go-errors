@@ -32,15 +32,18 @@ func Error{{ .CamelValue }}WithContext({{ if .HasMetadata }}ctx{{else}}_{{ end }
     {{ end -}}
     func ErrorI18n{{ .CamelValue }}(ctx context.Context, args ...interface{}) *errors.Error {
         msg := "{{ .Message }}"
+        defaultMessage := _{{ .CamelValue }}Msg
         if len(args) > 0 {
             msg = fmt.Sprintf(msg, args...)
+            defaultMessage.One = fmt.Sprintf(defaultMessage.One, args...)
+            defaultMessage.Other = fmt.Sprintf(defaultMessage.Other, args...)
         }
         err := errors.New({{ .HTTPCode }}, Error{{ .CamelValue }}ID, msg)
         local, ok := FromContext(ctx)
         if ok {
             config := &i18n.LocalizeConfig{
                 MessageID: Error{{ .CamelValue }}ID,
-                DefaultMessage: _{{ .CamelValue }}Msg,
+                DefaultMessage: defaultMessage,
             }
             localize, err1 := local.Localize(config)
             if err1 != nil {
